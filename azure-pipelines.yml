@@ -48,13 +48,13 @@ stages:
   - stage: 
     displayName: sccaning
     jobs:
-      - job: 
+      - job: scanning
         pool: default
         steps:
-        - task: tfsec@1
-          inputs:
-            version: 'v1.26.0'
-            dir: '$(System.DefaultWorkingDirectory)'
+        - script: |
+            brew install tfsec
+            tfsec .
+          displayName: Run tfsec Scan
   - stage: 
     displayName: terraformapply
     jobs:
