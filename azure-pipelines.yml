@@ -68,13 +68,13 @@ stages:
             backendAzureRmStorageAccountName: 'ztestg'
             backendAzureRmContainerName: 'ztecon'
             backendAzureRmKey: 'terraform.tfstate'
-
-      - job: terraformapply
-        steps:
         - task: TerraformTask@5
+          displayName: Terraform Apply
           inputs:
             provider: 'azurerm'
             command: 'apply'
+            workingDirectory: '$(System.DefaultWorkingDirectory)'
             commandOptions: '-auto-approve'
             environmentServiceNameAzureRM: 'hclsc'
+
 
