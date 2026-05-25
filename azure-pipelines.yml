@@ -16,7 +16,6 @@ stages:
 
   - stage: terraformdeploy
     displayName: Terraformdeploy
-    dependsOn: terraforminstall
     jobs:
       - job: terraforminit
         steps:
@@ -32,7 +31,6 @@ stages:
             backendAzureRmKey: 'terraform.tfstate'
 
       - job: terraformvalidate
-        dependsOn: terraforminit
         steps:
         - task: TerraformTask@5
           inputs:
