@@ -16,6 +16,7 @@ stages:
 
   - stage: terraformdeploy
     displayName: Terraformdeploy
+    dependsOn: terraforminstall
     jobs:
       - job: terraforminit
         steps:
