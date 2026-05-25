@@ -14,7 +14,7 @@ stages:
             terraformVersion: 'latest'
 
 
-  - stage: 
+  - stage: terraformdeploy
     displayName: Terraformdeploy
     jobs:
       - job: terraforminit
@@ -31,6 +31,7 @@ stages:
             backendAzureRmKey: 'terraform.tfstate'
 
       - job: terraformvalidate
+        dependsOn: terraforminit
         steps:
         - task: TerraformTask@5
           inputs:
@@ -38,6 +39,7 @@ stages:
             command: 'validate'
 
       - job: terraformplan
+        dependsOn: terraformvalidate
         steps:
         - task: TerraformTask@5
           inputs:
@@ -46,6 +48,7 @@ stages:
             environmentServiceNameAzureRM: 'tcs_infra'
 
   - stage: scanning
+    dependsOn: terraformdeploy
     jobs:
       - job: tfsec
         steps:
@@ -55,6 +58,7 @@ stages:
             dir: '$(System.DefaultWorkingDirectory)'
 
   - stage: manualvalidation
+    dependsOn: scanning
     jobs:
       - job: manualvalidation
         pool: server
