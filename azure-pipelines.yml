@@ -1,73 +1,108 @@
 trigger:
 - main
 
-pool: default
+pool:
+  name: default
 
 stages:
-  - stage: terraforminstall
-    displayName: terraform inatall
-    jobs:
-      - job: terraformintall
-        steps:
-        - task: TerraformInstaller@1
-          inputs:
-            terraformVersion: 'latest'
+
+# Terraform Install
+- stage: terraforminstall
+  displayName: Terraform Install
+  jobs:
+  - job: terraforminstall
+    steps:
+    - task: TerraformInstaller@1
+      inputs:
+        terraformVersion: 'latest'
 
 
-  - stage: terraformdeploy
-    displayName: Terraformdeploy
-    jobs:
-      - job: terraforminit
-        steps:
-        - task: TerraformTask@5
-          inputs:
-            provider: 'azurerm'
-            command: 'init'
-            backendServiceArm: 'tcs_infra'
-            backendAzureRmOverrideSubscriptionID: '1a39c6ac-4bf8-406a-be20-298e2ae5b5ce'
-            backendAzureRmResourceGroupName: 'tcs-rg'
-            backendAzureRmStorageAccountName: 'tcsstg1'
-            backendAzureRmContainerName: 'tcscon'
-            backendAzureRmKey: 'terraform.tfstate'
+# Terraform Deploy
+- stage: terraformdeploy
+  dependsOn: terraforminstall
+  jobs:
 
-      - job: terraformvalidate
-        steps:
-        - task: TerraformTask@5
-          inputs:
-            provider: 'azurerm'
-            command: 'validate'
-
-      - job: terraformplan
-        dependsOn: terraformvalidate
-        steps:
-        - task: TerraformTask@5
-          inputs:
-            provider: 'azurerm'
-            command: 'plan'
-            environmentServiceNameAzureRM: 'tcs_infra'
-
-  - stage: scanning
-    dependsOn: terraformdeploy
-    jobs:
-      - job: tfsec
-        steps:
-        - task: tfsec@1
-          inputs:
-            version: 'v1.26.0'
-            dir: '$(System.DefaultWorkingDirectory)'
-
-  - stage: manualvalidation
-    dependsOn: scanning
-    jobs:
-      - job: manualvalidation
-        pool: server
-        steps:
-        - task: ManualValidation@1
-          inputs:
-            notifyUsers: 'nsn.kapil@gmail.com'
-            approvers: 'nsn.kapil@gmail.com'
-            instructions: 'pls approve'
-            onTimeout: 'resume'
+  - job: terraforminit
+    displayName: Terraform Init
+    steps:
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        backendServiceArm: 'tcs_infra'
+        backendAzureRmOverrideSubscriptionID: '1a39c6ac-4bf8-406a-be20-298e2ae5b5ce'
+        backendAzureRmResourceGroupName: 'tcs-rg'
+        backendAzureRmStorageAccountName: 'tcsstg1'
+        backendAzureRmContainerName: 'tcscon'
+        backendAzureRmKey: 'terraform.tfstate'
 
 
+  - job: terraformvalidate
+    dependsOn: terraforminit
+    displayName: Terraform Validate
+    steps:
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
 
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'validate'
+
+
+  - job: terraformplan
+    dependsOn: terraformvalidate
+    displayName: Terraform Plan
+    steps:
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'plan'
+        environmentServiceNameAzureRM: 'tcs_infra'
+
+
+# Security Scanning
+- stage: scanning
+  dependsOn: terraformdeploy
+  jobs:
+  - job: tfsec
+    steps:
+    - task: tfsec@1
+      inputs:
+        version: 'v1.26.0'
+        dir: '$(System.DefaultWorkingDirectory)'
+
+
+# Manual Approval
+- stage: manualvalidation
+  dependsOn: scanning
+  jobs:
+  - job: manualvalidation
+    pool: server
+    steps:
+    - task: ManualValidation@1
+      inputs:
+        notifyUsers: 'nsn.kapil@gmail.com'
+        approvers: 'nsn.kapil@gmail.com'
+        instructions: 'Please approve deployment'
+        onTimeout: 'resume'
+
+
+# Terraform Apply
+- stage: terraformapply
+  dependsOn: manualvalidation
+  jobs:
+  - job: terraformapply
+    steps:
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'apply'
+        environmentServiceNameAzureRM: 'tcs_infra'
