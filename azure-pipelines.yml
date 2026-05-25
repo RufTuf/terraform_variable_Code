@@ -30,7 +30,6 @@ stages:
         provider: 'azurerm'
         command: 'init'
         backendServiceArm: 'tcs_infra'
-        backendAzureRmOverrideSubscriptionID: '1a39c6ac-4bf8-406a-be20-298e2ae5b5ce'
         backendAzureRmResourceGroupName: 'tcs-rg'
         backendAzureRmStorageAccountName: 'tcsstg1'
         backendAzureRmContainerName: 'tcscon'
