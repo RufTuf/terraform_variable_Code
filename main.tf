@@ -4,14 +4,14 @@
 
 # }
 
-# resource "azurerm_resource_group" "rg" {
-# for_each = 
-#   name = var.rgname
-#   location = "central india"
+resource "azurerm_resource_group" "rg" {
+for_each = var.rgname
+  name = "ekart-rg"
+  location = "central india"
 
 
 
-# }
+}
 
 # variable "rgname" {
 #    default = "kapil-rg"
